@@ -572,6 +572,17 @@ body {
     color: #a1a1aa;
 }
 
+.credential-id {
+    color: #6366f1;
+    font-size: 0.85rem;
+    font-family: 'Courier New', monospace;
+    background: rgba(99, 102, 241, 0.1);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+    display: inline-block;
+}
+
 /* Awards */
 .awards {
     display: grid;
@@ -1085,7 +1096,7 @@ body {
     }
     
     .services-grid {
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(2, 1fr);
         max-width: 1400px;
         margin: 0 auto;
     }

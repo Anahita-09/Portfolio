@@ -78,7 +78,7 @@ function initNavigation() {
 // Portfolio Filtering
 function initPortfolioFilter() {
     const filterBtns = document.querySelectorAll('.filter-btn');
-    const portfolioItems = document.querySelectorAll('.portfolio-item');
+    const portfolioCards = document.querySelectorAll('.portfolio-card');
     
     filterBtns.forEach(btn => {
         btn.addEventListener('click', function() {
@@ -90,14 +90,15 @@ function initPortfolioFilter() {
             
             const filter = this.getAttribute('data-filter');
             
-            portfolioItems.forEach(item => {
-                const category = item.getAttribute('data-category');
+            portfolioCards.forEach(card => {
+                const category = card.getAttribute('data-category');
                 
                 if (filter === 'all' || category === filter) {
-                    item.style.display = 'block';
-                    item.style.animation = 'fadeIn 0.5s ease-in-out';
+                    card.classList.remove('hidden');
+                    card.style.display = 'block';
                 } else {
-                    item.style.display = 'none';
+                    card.classList.add('hidden');
+                    card.style.display = 'none';
                 }
             });
         });
@@ -160,6 +161,17 @@ function initSmoothScrolling() {
 
 // Scroll Animations
 function initScrollAnimations() {
+    // Check if IntersectionObserver is supported
+    if (!('IntersectionObserver' in window)) {
+        // Fallback for older browsers
+        const animateElements = document.querySelectorAll('.service-card, .testimonial-card, .blog-card, .timeline-item, .certification-item, .award-item, .skill-tag');
+        animateElements.forEach(el => {
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+        });
+        return;
+    }
+    
     const observerOptions = {
         threshold: 0.1,
         rootMargin: '0px 0px -50px 0px'
@@ -169,17 +181,27 @@ function initScrollAnimations() {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('animate-in');
-                entry.target.style.animationDelay = `${Math.random() * 0.3}s`;
+                // Use staggered animation instead of random
+                const index = Array.from(entry.target.parentNode.children).indexOf(entry.target);
+                entry.target.style.animationDelay = `${Math.min(index * 0.1, 0.5)}s`;
             }
         });
     }, observerOptions);
     
     // Observe elements for animation
-    const animateElements = document.querySelectorAll('.service-card, .testimonial-card, .portfolio-item, .blog-card, .timeline-item, .certification-item, .award-item, .skill-tag');
+    const animateElements = document.querySelectorAll('.service-card, .testimonial-card, .blog-card, .timeline-item, .certification-item, .award-item, .skill-tag');
     animateElements.forEach((el, index) => {
         el.style.opacity = '0';
         el.style.transform = 'translateY(30px)';
+        el.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
         observer.observe(el);
+    });
+    
+    // Portfolio cards should be visible immediately
+    const portfolioCards = document.querySelectorAll('.portfolio-card');
+    portfolioCards.forEach(card => {
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
     });
 }
 
@@ -285,7 +307,7 @@ function initParallaxEffect() {
 // Hover Effects Enhancement
 function initHoverEffects() {
     // Add hover effects to cards
-    const cards = document.querySelectorAll('.service-card, .testimonial-card, .portfolio-item, .blog-card');
+    const cards = document.querySelectorAll('.service-card, .testimonial-card, .portfolio-card, .blog-card');
     
     cards.forEach(card => {
         card.addEventListener('mouseenter', function() {
@@ -379,7 +401,7 @@ function addAnimationStyles() {
         
         .service-card,
         .testimonial-card,
-        .portfolio-item,
+        .portfolio-card,
         .blog-card {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -427,20 +449,37 @@ function debounce(func, wait) {
     };
 }
 
-// Resize handler
+// Resize handler with better performance
 window.addEventListener('resize', debounce(() => {
     // Handle responsive adjustments
     const sidebar = document.querySelector('.sidebar');
     const mainContent = document.querySelector('.main-content');
     
     if (window.innerWidth <= 768) {
-        if (sidebar) sidebar.style.position = 'relative';
+        if (sidebar) {
+            sidebar.style.position = 'relative';
+            sidebar.style.width = '100%';
+        }
         if (mainContent) mainContent.style.marginLeft = '0';
+    } else if (window.innerWidth <= 1024) {
+        if (sidebar) {
+            sidebar.style.position = 'fixed';
+            sidebar.style.width = '300px';
+        }
+        if (mainContent) mainContent.style.marginLeft = '300px';
     } else {
-        if (sidebar) sidebar.style.position = 'fixed';
+        if (sidebar) {
+            sidebar.style.position = 'fixed';
+            sidebar.style.width = '350px';
+        }
         if (mainContent) mainContent.style.marginLeft = '350px';
     }
-}, 250));
+    
+    // Trigger layout recalculation for smooth transitions
+    if (window.innerWidth > 768) {
+        document.body.style.setProperty('--sidebar-width', sidebar ? sidebar.offsetWidth + 'px' : '350px');
+    }
+}, 100));
 
 // Add loading state
 window.addEventListener('load', () => {
